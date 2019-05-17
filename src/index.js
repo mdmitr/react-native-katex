@@ -1,13 +1,13 @@
-import React, { Component } from 'react';
-import { StyleSheet } from 'react-native';
-import { WebView } from 'react-native-webview';
+import React, { Component } from "react";
+import { StyleSheet } from "react-native";
+import { WebView } from "react-native-webview";
 
-import katexStyle from './katex-style';
-import katexScript from './katex-script';
-import { bool, func, object, string } from 'prop-types';
+import katexStyle from "./katex-style";
+import katexScript from "./katex-script";
+import { bool, func, object, string, array } from "prop-types";
 
-function getContent({ inlineStyle, expression = '', ...options }) {
-  return `<!DOCTYPE html>
+function getContent({ inlineStyle, expressions = [], ...options }) {
+  var res = `<!DOCTYPE html>
 <html>
 <head>
 <style>
@@ -16,25 +16,39 @@ ${inlineStyle}
 </style>
 <script>
 window.onerror = e => document.write(e);
-window.onload = () => katex.render(${JSON.stringify(expression)}, document.body, ${JSON.stringify(options)});
+window.onload = () => {`;
+
+expressions.forEach( (expr, idx) => {
+  res += `
+  katex.render(${JSON.stringify(expr)}, document.getElementById("id${idx}"), 
+  ${JSON.stringify(options)});
+  `;
+});
+
+res += `}
 ${katexScript}
 </script>
 </head>
-<body>
-</body>
-</html>
-`;
+<body>`;
+
+expressions.forEach( (expr, idx) => {
+  res += `<div id="id${idx}"></div>`;
+})
+
+res += `</body></html>`;
+return res;
 }
 
 const defaultStyle = StyleSheet.create({
   root: {
-    height: 40,
+    height: 40
   }
 });
 
 const defaultInlineStyle = `
 html, body {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   height: 100%;
@@ -48,9 +62,8 @@ html, body {
 `;
 
 export default class Katex extends Component {
-
   static propTypes = {
-    expression: string.isRequired,
+    expressions: array,
     displayMode: bool,
     throwOnError: bool,
     errorColor: string,
@@ -58,30 +71,33 @@ export default class Katex extends Component {
     macros: object,
     colorIsTextColor: bool,
     onLoad: func,
-    onError: func,
+    onError: func
   };
 
   static defaultProps = {
+    expressions: [],
     displayMode: false,
     throwOnError: false,
-    errorColor: '#f00',
+    errorColor: "#f00",
     inlineStyle: defaultInlineStyle,
     style: defaultStyle,
     macros: {},
     colorIsTextColor: false,
     onLoad: () => {},
-    onError: () => {},
+    onError: () => {}
   };
 
   render() {
     const { style, onLoad, onError, ...options } = this.props;
 
-    return <WebView
-      style={style}
-      source={{ html: getContent(options) }}
-      onLoad={onLoad}
-      onError={onError}
-      renderError={onError}
-    />;
+    return (
+      <WebView
+        style={style}
+        source={{ html: getContent(options) }}
+        onLoad={onLoad}
+        onError={onError}
+        renderError={onError}
+      />
+    );
   }
 }

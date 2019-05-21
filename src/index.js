@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { StyleSheet } from "react-native";
 import { WebView } from "react-native-webview";
-import {PixelRatio} from 'react-native';
+import {PixelRatio, Dimensions} from 'react-native';
 
 import katexStyle from "./katex-style";
 import katexScript from "./katex-script";
@@ -10,12 +10,14 @@ import { bool, func, object, string, array } from "prop-types";
 
 
 function px2dp(height) {
-    return height/PixelRatio.get();
+    let pixelSize = PixelRatio.getPixelSizeForLayoutSize(Dimensions.get("window").height)/Dimensions.get("window").height;
+    return height/pixelSize; //PixelRatio.get();
 }
 
-function getContent({ inlineStyle, expressions = [], ...options }) {
+function getContent({ inlineStyle, expressions = [], text = "", ...options }) {
   var res = `<!DOCTYPE html>
 <html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <head>
 <style>
 ${katexStyle}
@@ -36,12 +38,15 @@ expressions.forEach( (expr, idx) => {
 });
 
 res += `
-setTimeout(() => window.ReactNativeWebView.postMessage(document.getElementById("main").scrollHeight), 500);
+setTimeout(() => window.ReactNativeWebView.postMessage(
+Math.max(document.documentElement.clientHeight, document.documentElement.scrollHeight, document.body.clientHeight, document.body.scrollHeight)
+//  document.getElementById("main").scrollHeight
+), 100);
 }
 ${katexScript}
 </script>
 </head>
-<body><div id="main" class="main">`;
+<body><div id="main" class="main"><p id="text" class="text">${text}</p>`;
 
 expressions.forEach( (expr, idx) => {
   res += `<div id="id${idx}"></div>`;

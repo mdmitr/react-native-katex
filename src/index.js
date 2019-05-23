@@ -11,7 +11,7 @@ import { bool, func, object, string, array } from "prop-types";
 
 function px2dp(height) {
     let pixelSize = PixelRatio.getPixelSizeForLayoutSize(Dimensions.get("window").height)/Dimensions.get("window").height;
-    return height/pixelSize; //PixelRatio.get();
+    return height; // /pixelSize; //PixelRatio.get();
 }
 
 function getContent({ inlineStyle, expressions = [], text = "", ...options }) {

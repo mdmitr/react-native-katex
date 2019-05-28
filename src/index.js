@@ -41,7 +41,7 @@ res += `
 setTimeout(() => window.ReactNativeWebView.postMessage(
 Math.max(document.documentElement.clientHeight, document.documentElement.scrollHeight, document.body.clientHeight, document.body.scrollHeight)
 //  document.getElementById("main").scrollHeight
-), 100);
+), 1000);
 }
 ${katexScript}
 </script>
